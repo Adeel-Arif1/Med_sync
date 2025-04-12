@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
-import 'package:med_sync/presentation/screens/login_screen.dart';
+import 'package:med_sync/presentation/screens/auth/login_screen.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
 
 class WelcomeScreen extends StatelessWidget {

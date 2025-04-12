@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:med_sync/presentation/screens/google_signin.dart';
-import 'package:med_sync/presentation/screens/login_screen.dart';
+import 'package:med_sync/presentation/screens/auth/google_signin.dart';
+import 'package:med_sync/presentation/screens/auth/login_screen.dart';
 import 'package:med_sync/presentation/widgets/custom_appbar.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
 import 'package:med_sync/presentation/widgets/custom_text.dart';

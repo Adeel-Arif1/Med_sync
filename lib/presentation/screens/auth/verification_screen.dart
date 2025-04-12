@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:med_sync/presentation/widgets/auth_prompt.dart';
 import 'package:med_sync/presentation/widgets/custom_appbar.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
@@ -30,10 +31,22 @@ class VerificationScreen extends StatelessWidget {
                 'Enter the verification code we just sent on your email address.',
               ),
               SizedBox(height: 30),
-
+              OtpTextField(
+                numberOfFields: 4,
+                borderColor: Color(0xFF512DA8),
+                focusedBorderColor: Colors.blue,
+                showFieldAsBox: true,
+                onCodeChanged: (String code) {
+                  // You can use this to validate as the user types
+                },
+                onSubmit: (String verificationCode) {
+                  print("Entered OTP is: $verificationCode");
+                  // Trigger your verification logic here
+                }, // end onSubmit
+              ),
+              SizedBox(height: 30),
               PrimaryButton(text: 'Verify ', onPressed: () {}),
-Spacer(),
-                // Login Prompt
+              SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

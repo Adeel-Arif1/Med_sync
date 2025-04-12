@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:med_sync/presentation/screens/login_screen.dart'; // or wherever your screen is
+import 'package:med_sync/presentation/screens/auth/login_screen.dart'; // or wherever your screen is
 
 class AuthPrompt extends StatelessWidget {
   const AuthPrompt({super.key});
