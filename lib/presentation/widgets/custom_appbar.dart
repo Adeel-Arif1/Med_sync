@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:med_sync/core/constants/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final List<Widget>? actions;
   final bool automaticallyImplyLeading;
   final IconData leadingIcon;
+  final Color backgroundColor;
+  final Color textColor;
+  final double elevation;
 
   const CustomAppBar({
     super.key,
@@ -12,22 +16,40 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.automaticallyImplyLeading = true,
     this.leadingIcon = Icons.arrow_back,
+    this.backgroundColor = Colors.white,
+    this.textColor = Colors.black,
+    this.elevation = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
-      title: title != null ? Text(title!) : null,
+      backgroundColor: backgroundColor,
+      elevation: elevation,
+      title: title != null 
+          ? Text(
+              title!,
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
       centerTitle: true,
       automaticallyImplyLeading: automaticallyImplyLeading,
       leading: automaticallyImplyLeading
           ? IconButton(
-              icon: Icon(leadingIcon),
+              icon: Icon(
+                leadingIcon,
+                color: textColor,
+                size: 24,
+              ),
               onPressed: () => Navigator.of(context).pop(),
             )
           : null,
       actions: actions,
+      iconTheme: IconThemeData(color: textColor),
     );
   }
 
