@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum MedicineType { capsule, drops }
+enum MedicineType { capsule, drops, tablet }
 
 class Medicine {
   final String id;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
+import 'package:med_sync/presentation/screens/add_med_screen.dart';
 import 'package:med_sync/presentation/widgets/date_selector.dart';
 import 'package:med_sync/presentation/widgets/medicine_card.dart';
 
@@ -51,14 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: _buildAppBar(),
       floatingActionButton: _buildFAB(),
       body: Column(
-        children: [   SizedBox(height: 25,),
+        children: [
+          SizedBox(height: 25),
           DateSelector(
             selectedDate: _selectedDate,
             onDateSelected: (date) => setState(() => _selectedDate = date),
           ),
           _buildIntakeStatus(),
           Expanded(child: _buildMedicineList()),
-       
         ],
       ),
     );
@@ -66,8 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: const Text('Today',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      title: const Text(
+        'Today',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+      ),
       centerTitle: false,
       elevation: 2,
       flexibleSpace: Container(
@@ -157,8 +160,18 @@ class _HomeScreenState extends State<HomeScreen> {
       onPressed: _navigateToAddMedicine,
     );
   }
+void _navigateToAddMedicine() async {
+  final newMedicine = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const AddMedicinePage()),
+  );
 
-  void _navigateToAddMedicine() {
-    // Implement navigation
+  if (newMedicine != null && newMedicine is Medicine) {
+    setState(() {
+      _medicines.add(newMedicine);
+      _calculateTakenCount();
+    });
   }
+}
+
 }

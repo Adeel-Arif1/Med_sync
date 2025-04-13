@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
+import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/widgets/custom_appbar.dart';
+
 class AddMedicinePage extends StatefulWidget {
   const AddMedicinePage({super.key});
 
@@ -17,6 +19,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   final TextEditingController _dateController = TextEditingController();
   String? _selectedType;
   bool _alarmEnabled = true;
+  TimeOfDay? _selectedTime;
 
   final List<String> _medicineTypes = ['Capsule', 'Drop', 'Tablet'];
 
@@ -53,52 +56,58 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Medicine Name Field
                       _buildSectionTitle('Name*'),
                       _buildTextField(
                         controller: _nameController,
                         hintText: 'Name (e.g. Ibuprofen)',
-                        validator: (value) => value?.isEmpty ?? true 
-                            ? 'Please enter medicine name' 
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter medicine name'
+                                    : null,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Medicine Type Dropdown
                       _buildSectionTitle('Type*'),
                       _buildTypeDropdown(),
                       const SizedBox(height: 16),
-                      
+
                       // Dose Field
                       _buildSectionTitle('Dose*'),
                       _buildTextField(
                         controller: _doseController,
                         hintText: 'Dose (e.g. 100mg)',
-                        validator: (value) => value?.isEmpty ?? true 
-                            ? 'Please enter medicine dose' 
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter medicine dose'
+                                    : null,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Amount Field
                       _buildSectionTitle('Amount*'),
                       _buildTextField(
                         controller: _amountController,
                         hintText: 'Amount (e.g. 3)',
                         keyboardType: TextInputType.number,
-                        validator: (value) => value?.isEmpty ?? true 
-                            ? 'Please enter amount' 
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter amount'
+                                    : null,
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Reminders Section
                       _buildSectionTitle('Reminders'),
                       const SizedBox(height: 8),
                       _buildDateField(),
                       const SizedBox(height: 16),
-                      
+
                       // Alarm Toggle
                       _buildAlarmToggle(),
                       const SizedBox(height: 24),
@@ -106,7 +115,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                   ),
                 ),
               ),
-              
+
               // Save Button (always visible at bottom)
               _buildSaveButton(),
             ],
@@ -152,7 +161,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       keyboardType: keyboardType,
       validator: validator,
@@ -163,14 +175,13 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
     return DropdownButtonFormField<String>(
       value: _selectedType,
       decoration: _buildInputDecoration('Select Option'),
-      items: _medicineTypes.map((type) {
-        return DropdownMenuItem(
-          value: type,
-          child: Text(type),
-        );
-      }).toList(),
+      items:
+          _medicineTypes.map((type) {
+            return DropdownMenuItem(value: type, child: Text(type));
+          }).toList(),
       onChanged: (value) => setState(() => _selectedType = value),
-      validator: (value) => value == null ? 'Please select medicine type' : null,
+      validator:
+          (value) => value == null ? 'Please select medicine type' : null,
       style: TextStyle(color: AppColors.textPrimary),
       dropdownColor: Colors.white,
       icon: Icon(Icons.arrow_drop_down, color: AppColors.primary),
@@ -195,9 +206,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                   ? 'dd/mm/yyyy, 00:00'
                   : _dateController.text,
               style: TextStyle(
-                color: _dateController.text.isEmpty
-                    ? Colors.grey.shade400
-                    : AppColors.textPrimary,
+                color:
+                    _dateController.text.isEmpty
+                        ? Colors.grey.shade400
+                        : AppColors.textPrimary,
               ),
             ),
             Icon(Icons.calendar_today, size: 20, color: AppColors.primary),
@@ -220,10 +232,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         children: [
           Text(
             'Turn on Alarm',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
+            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
           ),
           Switch(
             value: _alarmEnabled,
@@ -238,23 +247,18 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
+      height: 50,
       child: ElevatedButton(
-        onPressed: _saveMedicine,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 0,
         ),
+        onPressed: _saveMedicine,
         child: const Text(
           'Save Medicine',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: 16),
         ),
       ),
     );
@@ -283,64 +287,60 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: AppColors.textPrimary,
-            ),
-          ),
-          child: child!,
-        );
-      },
+      initialTime: TimeOfDay.now(),
     );
-    
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-        builder: (context, child) {
-          return Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: AppColors.primary,
-                onPrimary: Colors.white,
-                surface: Colors.white,
-                onSurface: AppColors.textPrimary,
-              ),
-            ),
-            child: child!,
-          );
-        },
-      );
-      
-      if (pickedTime != null) {
-        setState(() {
-          _dateController.text =
-              '${DateFormat('dd/MM/yyyy').format(pickedDate)}, ${pickedTime.format(context)}';
-        });
-      }
+    if (pickedTime != null) {
+      setState(() {
+        _selectedTime = pickedTime;
+        final now = DateTime.now();
+        final formatted = DateFormat('dd/MM/yyyy, HH:mm').format(
+          DateTime(
+            now.year,
+            now.month,
+            now.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          ),
+        );
+        _dateController.text = formatted;
+      });
     }
   }
 
   void _saveMedicine() {
     if (_formKey.currentState!.validate()) {
-      // Save logic here
+      final newMedicine = Medicine(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: _nameController.text,
+        dosage:
+            '${_amountController.text} ${_selectedType?.toLowerCase() ?? ''}, ${_doseController.text}',
+        type: _mapType(_selectedType),
+        time: _selectedTime ?? TimeOfDay.now(),
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Medicine saved successfully!'),
           backgroundColor: AppColors.primary,
         ),
       );
-      Navigator.pop(context);
+
+      Navigator.pop(context, newMedicine); // send back to previous screen
+    }
+  }
+
+  MedicineType _mapType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'capsule':
+        return MedicineType.capsule;
+      case 'drop':
+        return MedicineType.drops;
+      case 'tablet':
+        return MedicineType.tablet;
+      default:
+        return MedicineType.capsule;
     }
   }
 }

@@ -10,7 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_otp_text_field: ^1.5.1+1
+  hive: ^2.2.3
   intl: ^0.20.2
+  provider: ^6.1.4
 
 dev_dependencies:
   flutter_test:
