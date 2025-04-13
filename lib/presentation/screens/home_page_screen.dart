@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:med_sync/features/application/provider/medicine_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/add_med_screen.dart';
@@ -15,34 +17,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late DateTime _selectedDate;
-  int _takenCount = 1;
-  final List<Medicine> _medicines = [
-    Medicine(
-      id: '1',
-      name: 'Vitamin D',
-      dosage: '1 Capsule, 1000mg',
-      time: TimeOfDay(hour: 9, minute: 41),
-      type: MedicineType.capsule,
-    ),
-    Medicine(
-      id: '2',
-      name: 'B12 Drops',
-      dosage: '5 Drops, 1200mg',
-      time: TimeOfDay(hour: 6, minute: 13),
-      type: MedicineType.drops,
-      isTaken: true,
-    ),
-  ];
 
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-    _calculateTakenCount();
-  }
-
-  void _calculateTakenCount() {
-    _takenCount = _medicines.where((med) => med.isTaken).length;
+    // Wait for provider to initialize then print
+    Future.delayed(Duration(milliseconds: 500), () {
+      final provider = Provider.of<MedicineProvider>(context, listen: false);
+      print("🚀 Loaded medicines on app start:");
+      provider.medicines.forEach((med) {
+        print(
+          "• ${med.name} - ${med.dosage} - ${med.time.format(context)} - Taken: ${med.isTaken}",
+        );
+      });
+    });
   }
 
   @override
@@ -86,69 +75,107 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildIntakeStatus() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '$_takenCount',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                ),
-                TextSpan(
-                  text: '/${_medicines.length} Completed',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+    return Consumer<MedicineProvider>(
+      builder: (context, medicineProvider, _) {
+        int takenCount =
+            medicineProvider.medicines.where((med) => med.isTaken).length;
+        return Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
           ),
-          Text(
-            DateFormat('MMMM d, y').format(DateTime.now()),
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$takenCount',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '/${medicineProvider.medicines.length} Completed',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                DateFormat('MMMM d, y').format(DateTime.now()),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMedicineList() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _medicines.length,
-      itemBuilder: (context, index) {
-        final medicine = _medicines[index];
-        return MedicineCard(
-          medicine: medicine,
-          onMarkTaken: () => _markAsTaken(medicine),
         );
       },
     );
   }
 
-  void _markAsTaken(Medicine medicine) {
+ Widget _buildMedicineList() {
+  return Consumer<MedicineProvider>(
+    builder: (context, medicineProvider, _) {
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: medicineProvider.medicines.length,
+        itemBuilder: (context, index) {
+          final medicine = medicineProvider.medicines[index];
+
+          return Dismissible(
+            key: Key(medicine.id), // Make sure `id` is unique in your model
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(Icons.delete, color: Colors.white, size: 28),
+            ),
+            onDismissed: (_) {
+              Provider.of<MedicineProvider>(context, listen: false)
+                  .deleteMedicine(medicine); // ID-based delete
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${medicine.name} deleted')),
+              );
+            },
+            child: MedicineCard(
+              medicine: medicine,
+              onMarkTaken: () => _markAsTaken(medicine, medicineProvider),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+
+  void _markAsTaken(
+    Medicine medicine,
+    MedicineProvider medicineProvider,
+  ) async {
     setState(() {
       medicine.isTaken = true;
-      _calculateTakenCount();
     });
+
+    // Update medicine status in the database and the provider
+    await medicineProvider.updateMedicineStatus(medicine);
   }
 
   Widget _buildFAB() {
@@ -160,18 +187,33 @@ class _HomeScreenState extends State<HomeScreen> {
       onPressed: _navigateToAddMedicine,
     );
   }
-void _navigateToAddMedicine() async {
-  final newMedicine = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const AddMedicinePage()),
-  );
 
-  if (newMedicine != null && newMedicine is Medicine) {
-    setState(() {
-      _medicines.add(newMedicine);
-      _calculateTakenCount();
-    });
+  void _navigateToAddMedicine() async {
+    final newMedicine = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddMedicinePage()),
+    );
+
+    if (newMedicine != null && newMedicine is Medicine) {
+      final provider = Provider.of<MedicineProvider>(context, listen: false);
+      provider.addMedicine(newMedicine);
+
+      // Debug print
+      print("✅ Added new medicine: ${newMedicine.name}");
+
+      // Delay to let provider update, then log the list
+      Future.delayed(Duration(milliseconds: 500), () {
+        print("📦 Medicines in Provider after add:");
+        provider.medicines.forEach((med) {
+          print(
+            "• ${med.name} - ${med.dosage} - ${med.time.format(context)} - Taken: ${med.isTaken}",
+          );
+        });
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Medicine saved successfully!')));
+    }
   }
-}
-
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
+import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/widgets/custom_appbar.dart';
+import 'package:provider/provider.dart';
 
 class AddMedicinePage extends StatefulWidget {
   const AddMedicinePage({super.key});
@@ -308,28 +311,32 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       });
     }
   }
+void _saveMedicine() async {
+  if (_formKey.currentState!.validate()) {
+    final newMedicine = Medicine.withTimeOfDay(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text,
+      dosage:
+          '${_amountController.text} ${_selectedType?.toLowerCase() ?? ''}, ${_doseController.text}',
+      type: _mapType(_selectedType),
+      time: _selectedTime ?? TimeOfDay.now(),
+    );
 
-  void _saveMedicine() {
-    if (_formKey.currentState!.validate()) {
-      final newMedicine = Medicine(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
-        dosage:
-            '${_amountController.text} ${_selectedType?.toLowerCase() ?? ''}, ${_doseController.text}',
-        type: _mapType(_selectedType),
-        time: _selectedTime ?? TimeOfDay.now(),
-      );
+    // Save medicine to Hive and update the provider
+    await context.read<MedicineProvider>().addMedicine(newMedicine);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Medicine saved successfully!'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Medicine saved successfully!'),
+        backgroundColor: AppColors.primary,
+      ),
+    );
 
-      Navigator.pop(context, newMedicine); // send back to previous screen
-    }
+    Navigator.pop(context); // Return to the previous page
   }
+}
+
+
 
   MedicineType _mapType(String? type) {
     switch (type?.toLowerCase()) {
