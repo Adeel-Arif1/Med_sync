@@ -8,11 +8,23 @@ import 'package:med_sync/presentation/widgets/custom_appbar.dart';
 import 'package:provider/provider.dart';
 
 class AddMedicinePage extends StatefulWidget {
-  const AddMedicinePage({super.key});
+  final DateTime selectedDate;
+
+  const AddMedicinePage({
+    super.key,
+    required this.selectedDate,
+  });
 
   @override
   State<AddMedicinePage> createState() => _AddMedicinePageState();
 }
+
+// class AddMedicinePage extends StatefulWidget {
+//   const AddMedicinePage({super.key});
+
+//   @override
+//   State<AddMedicinePage> createState() => _AddMedicinePageState();
+// }
 
 class _AddMedicinePageState extends State<AddMedicinePage> {
   final _formKey = GlobalKey<FormState>();
@@ -23,6 +35,7 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
   String? _selectedType;
   bool _alarmEnabled = true;
   TimeOfDay? _selectedTime;
+  
 
   final List<String> _medicineTypes = ['Capsule', 'Drop', 'Tablet'];
 
@@ -311,6 +324,8 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       });
     }
   }
+
+  
 void _saveMedicine() async {
   if (_formKey.currentState!.validate()) {
     final newMedicine = Medicine.withTimeOfDay(

@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToAddMedicine() async {
     final newMedicine = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const AddMedicinePage()),
+      MaterialPageRoute(builder: (context) => AddMedicinePage( selectedDate: _selectedDate, )),
     );
 
     if (newMedicine != null && newMedicine is Medicine) {

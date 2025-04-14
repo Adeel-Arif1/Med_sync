@@ -64,46 +64,55 @@ class MedicineCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        medicine.type == MedicineType.capsule
-            ? Icons.medication_liquid
-            : Icons.water_drop_rounded,
+        (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
+    ? Icons.medication_liquid
+    : Icons.water_drop_rounded,
+
         color: AppColors.primary,
         size: 28,
       ),
     );
   }
+Widget _buildMedicineDetails(String time, String timeLeft) {
+  // Determine the correct unit
+  final String unit = (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
+      ? 'mg'
+      : 'ml';
 
-  Widget _buildMedicineDetails(String time, String timeLeft) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 4),
-        Text(
-          medicine.dosage,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(Icons.access_time, size: 16, color: AppColors.primary),
-            const SizedBox(width: 4),
-            Text(
-              time,
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 4),
+
+      /// Show dosage + correct unit
+      Text(
+        '${medicine.dosage} $unit',
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+      ),
+
+      const SizedBox(height: 8),
+
+      Row(
+        children: [
+          Icon(Icons.access_time, size: 16, color: AppColors.primary),
+          const SizedBox(width: 4),
+          Text(
+            time,
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
             ),
-            const Spacer(),
-            Text(
-              timeLeft,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+          const Spacer(),
+          Text(
+            timeLeft,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _buildStatusIndicator() {
     return medicine.isTaken
