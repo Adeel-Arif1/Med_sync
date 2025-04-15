@@ -2,27 +2,41 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 
 class DatabaseService {
+  static const String _boxName = 'medicines';
+
   static Future<void> init() async {
     await Hive.initFlutter();
-    Hive.registerAdapter(MedicineAdapter()); // Register your medicine adapter
-    await Hive.openBox('medicines');
+    Hive.registerAdapter(MedicineAdapter());
+    await Hive.openBox<Medicine>(_boxName);
   }
 
-  static Box get medicinesBox => Hive.box('medicines');
+  static Box<Medicine> get _box => Hive.box<Medicine>(_boxName);
 
-  // Add a new medicine
-  static Future<void> addMedicine(Medicine medicine) async {
-    await medicinesBox.add(medicine);
+  // Add a new medicine and return it with generated key as ID
+  static Future<Medicine> addMedicine(Medicine medicine) async {
+    final key = await _box.add(medicine);
+    return medicine.copyWith(id: key.toString());
   }
 
   // Retrieve all medicines
   static List<Medicine> getAllMedicines() {
-    return medicinesBox.values.toList().cast<Medicine>();
+    return _box.values.toList();
   }
 
-  // Update a medicine (e.g., mark as taken)
+  // Update a medicine
   static Future<void> updateMedicine(Medicine medicine) async {
-    int index = medicinesBox.values.toList().indexOf(medicine);
-    await medicinesBox.putAt(index, medicine);
+    if (medicine.id == null) return;
+    final key = int.tryParse(medicine.id!);
+    if (key != null) {
+      await _box.put(key, medicine);
+    }
+  }
+
+  // Delete a medicine
+  static Future<void> deleteMedicine(String id) async {
+    final key = int.tryParse(id);
+    if (key != null) {
+      await _box.delete(key);
+    }
   }
 }

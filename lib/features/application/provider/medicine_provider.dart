@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:med_sync/core/database_service.dart';
+
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 
 class MedicineProvider with ChangeNotifier {
@@ -9,41 +10,38 @@ class MedicineProvider with ChangeNotifier {
 
   // Load medicines from Hive
   Future<void> loadMedicines() async {
-    var box = await Hive.openBox<Medicine>('medicines');
-    _medicines = box.values.toList().cast<Medicine>();
+    _medicines = await DatabaseService.getAllMedicines();
     notifyListeners();
   }
 
   // Add medicine to the list and save to Hive
   Future<void> addMedicine(Medicine medicine) async {
-    var box = await Hive.openBox<Medicine>('medicines');
-    await box.add(medicine);
-    _medicines.add(medicine);
+    final newMedicine = await DatabaseService.addMedicine(medicine);
+    _medicines.add(newMedicine);
     notifyListeners();
   }
 
-  // Update medicine status in the list and in Hive
+  // Update medicine in the list and in Hive
+  Future<void> updateMedicine(Medicine medicine) async {
+    await DatabaseService.updateMedicine(medicine);
+    final index = _medicines.indexWhere((m) => m.id == medicine.id);
+    if (index != -1) {
+      _medicines[index] = medicine;
+      notifyListeners();
+    }
+  }
+
+  // Update medicine status
   Future<void> updateMedicineStatus(Medicine medicine) async {
-    var box = await Hive.openBox<Medicine>('medicines');
-    await medicine.save(); // Save changes to Hive
-    notifyListeners();
+    await updateMedicine(medicine); // Reuse the update method
   }
 
-  // ✅ Delete medicine from Hive and list
+  // Delete medicine from Hive and list
   Future<void> deleteMedicine(Medicine medicine) async {
-    var box = await Hive.openBox<Medicine>('medicines');
-
-    // First find the key for this medicine
-    final key = box.keys.firstWhere(
-      (k) => box.get(k) == medicine,
-      orElse: () => null,
-    );
-
-    if (key != null) {
-      await box.delete(key);
-      _medicines.remove(medicine);
+    if (medicine.id != null) {
+      await DatabaseService.deleteMedicine(medicine.id!);
+      _medicines.removeWhere((m) => m.id == medicine.id);
       notifyListeners();
     }
   }
 }
-

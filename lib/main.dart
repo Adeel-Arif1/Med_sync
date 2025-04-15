@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart'; // Add this import
+import 'package:med_sync/core/database_service.dart';
 import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/home_page_screen.dart';
@@ -8,7 +9,7 @@ import 'package:provider/provider.dart';
 void main() async {
   // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+  //await DatabaseService.init();
   // Initialize Hive
   await Hive.initFlutter();
   

@@ -16,27 +16,27 @@ enum MedicineType {
 }
 
 @HiveType(typeId: 1)
-class Medicine extends HiveObject {
+class Medicine {
   @HiveField(0)
-  String id;
+  final String id;
 
   @HiveField(1)
-  String name;
+  final String name;
 
   @HiveField(2)
-  String dosage;
+  final String dosage;
 
   @HiveField(3)
-  int hour;
+  final int hour;
 
   @HiveField(4)
-  int minute;
+  final int minute;
 
   @HiveField(5)
-  MedicineType type;
+  final MedicineType type;
 
   @HiveField(6)
-  bool isTaken;
+  late final bool isTaken;
 
   Medicine({
     required this.id,
@@ -48,10 +48,10 @@ class Medicine extends HiveObject {
     this.isTaken = false,
   });
 
-  /// Getter to reconstruct `TimeOfDay` from stored hour and minute.
+  /// Reconstruct TimeOfDay
   TimeOfDay get time => TimeOfDay(hour: hour, minute: minute);
 
-  /// Optional convenience constructor
+  /// Factory constructor for ease
   factory Medicine.withTimeOfDay({
     required String id,
     required String name,
@@ -68,6 +68,27 @@ class Medicine extends HiveObject {
       minute: time.minute,
       type: type,
       isTaken: isTaken,
+    );
+  }
+
+  /// Add copyWith to help update fields immutably
+  Medicine copyWith({
+    String? id,
+    String? name,
+    String? dosage,
+    int? hour,
+    int? minute,
+    MedicineType? type,
+    bool? isTaken,
+  }) {
+    return Medicine(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      dosage: dosage ?? this.dosage,
+      hour: hour ?? this.hour,
+      minute: minute ?? this.minute,
+      type: type ?? this.type,
+      isTaken: isTaken ?? this.isTaken,
     );
   }
 }

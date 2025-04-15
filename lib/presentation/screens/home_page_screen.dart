@@ -21,8 +21,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    
     _selectedDate = DateTime.now();
-    // Wait for provider to initialize then print
+
+Future<void> _loadMedicines() async {
+  await Provider.of<MedicineProvider>(context, listen: false).loadMedicines();
+  // Debug prints can go here
+      // Wait for provider to initialize then print
     Future.delayed(Duration(milliseconds: 500), () {
       final provider = Provider.of<MedicineProvider>(context, listen: false);
       print("🚀 Loaded medicines on app start:");
@@ -33,6 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
   }
+
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final medicine = medicineProvider.medicines[index];
 
           return Dismissible(
-            key: Key(medicine.id), // Make sure `id` is unique in your model
+            key: Key(medicine.id), // Make sure id is unique in your model
             direction: DismissDirection.endToStart,
             background: Container(
               alignment: Alignment.centerRight,
@@ -154,10 +163,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 SnackBar(content: Text('${medicine.name} deleted')),
               );
             },
-            child: MedicineCard(
-              medicine: medicine,
-              onMarkTaken: () => _markAsTaken(medicine, medicineProvider),
-            ),
+          child: MedicineCard(
+  medicine: medicine,
+  onMarkTaken: () => _markAsTaken(medicine, medicineProvider),
+  onEdit: () => _navigateToEditMedicine(medicine),
+),
+
           );
         },
       );
@@ -216,4 +227,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ).showSnackBar(SnackBar(content: Text('Medicine saved successfully!')));
     }
   }
+  void _navigateToEditMedicine(Medicine medicine) async {
+  final updatedMedicine = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => AddMedicinePage(
+        selectedDate: _selectedDate,
+        existingMedicine: medicine, // <-- Pass medicine to pre-fill form
+      ),
+    ),
+  );
+
+  if (updatedMedicine != null && updatedMedicine is Medicine) {
+    final provider = Provider.of<MedicineProvider>(context, listen: false);
+    provider.updateMedicine(updatedMedicine); // <-- Update medicine in provider
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${updatedMedicine.name} updated')),
+    );
+  }
+}
+
 }

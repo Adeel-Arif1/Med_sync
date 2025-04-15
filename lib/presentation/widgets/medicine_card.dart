@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-
 import 'package:med_sync/core/constants/app_colors.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
-
-import 'package:med_sync/presentation/screens/home_page_screen.dart';
 
 class MedicineCard extends StatelessWidget {
   final Medicine medicine;
   final VoidCallback onMarkTaken;
+  final VoidCallback onEdit;
 
   const MedicineCard({
     super.key,
     required this.medicine,
     required this.onMarkTaken,
+    required this.onEdit,
   });
 
   @override
@@ -34,7 +33,9 @@ class MedicineCard extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        minVerticalPadding: 0, // Reduces minimum vertical padding
+        dense: true, // Makes the ListTile more compact
         leading: _buildMedicineIcon(),
         title: Text(
           medicine.name,
@@ -45,15 +46,51 @@ class MedicineCard extends StatelessWidget {
           ),
         ),
         subtitle: _buildMedicineDetails(time, timeLeft),
-        trailing: _buildStatusIndicator(),
+        trailing: SizedBox(
+          height: 48, // Fixed height for trailing widget
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Edit button - smaller with less padding
+              GestureDetector(
+                onTap: onEdit,
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.edit,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Status indicator - more compact
+              medicine.isTaken
+                  ? const Icon(
+                      Icons.check_circle_rounded,
+                      size: 18,
+                      color: AppColors.primary,
+                    )
+                  : GestureDetector(
+                      onTap: onMarkTaken,
+                      child: const Icon(
+                        Icons.add_alarm_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildMedicineIcon() {
     return Container(
-      width: 50,
-      height: 50,
+      width: 40, // Reduced from 50
+      height: 40, // Reduced from 50
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -65,62 +102,54 @@ class MedicineCard extends StatelessWidget {
       ),
       child: Icon(
         (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
-    ? Icons.medication_liquid
-    : Icons.water_drop_rounded,
-
+            ? Icons.medication_liquid
+            : Icons.water_drop_rounded,
         color: AppColors.primary,
-        size: 28,
+        size: 22, // Reduced from 28
       ),
     );
   }
-Widget _buildMedicineDetails(String time, String timeLeft) {
-  // Determine the correct unit
-  final String unit = (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
-      ? 'mg'
-      : 'ml';
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 4),
+  Widget _buildMedicineDetails(String time, String timeLeft) {
+    final String unit = (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
+        ? 'mg'
+        : 'ml';
 
-      /// Show dosage + correct unit
-      Text(
-        '${medicine.dosage} $unit',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-      ),
-
-      const SizedBox(height: 8),
-
-      Row(
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.access_time, size: 16, color: AppColors.primary),
-          const SizedBox(width: 4),
           Text(
-            time,
-            style: TextStyle(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
+            '${medicine.dosage} $unit',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13), // Slightly smaller
           ),
-          const Spacer(),
-          Text(
-            timeLeft,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(Icons.access_time, size: 14, color: AppColors.primary), // Smaller
+              const SizedBox(width: 4),
+              Text(
+                time,
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13, // Smaller
+                ),
+              ),
+              const Spacer(),
+              Text(
+                timeLeft,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11, // Smaller
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ],
-  );
-}
-
-  Widget _buildStatusIndicator() {
-    return medicine.isTaken
-        ? Icon(Icons.check_circle_rounded, color: AppColors.primary)
-        : IconButton(
-          icon: Icon(Icons.add_alarm_rounded, color: AppColors.primary),
-          onPressed: onMarkTaken,
-        );
+    );
   }
 
   String _calculateTimeLeft(TimeOfDay medicineTime) {
