@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
 import 'package:med_sync/presentation/screens/auth/auth/register_screen.dart';
+import 'package:med_sync/presentation/screens/home_page_screen.dart';
+import 'package:med_sync/presentation/screens/manage_med_screen.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -95,6 +97,10 @@ class LoginScreen extends StatelessWidget {
                 text: 'Login',
                 onPressed: () {
                   // Add login logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ManageMedScreen()),
+                  );
                 },
               ),
 

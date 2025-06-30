@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
-part 'medicine_model.g.dart';
+part 'medicine_model.g.dart'; // This is critical for code generation
+//part 'medicine_model.g.dart';
 
 @HiveType(typeId: 0)
 enum MedicineType {
@@ -19,6 +20,7 @@ enum MedicineType {
 class Medicine {
   @HiveField(0)
   final String id;
+  //final String id;
 
   @HiveField(1)
   final String name;
@@ -36,7 +38,7 @@ class Medicine {
   final MedicineType type;
 
   @HiveField(6)
-  late final bool isTaken;
+  bool isTaken;
 
   Medicine({
     required this.id,
@@ -48,20 +50,18 @@ class Medicine {
     this.isTaken = false,
   });
 
-  /// Reconstruct TimeOfDay
   TimeOfDay get time => TimeOfDay(hour: hour, minute: minute);
 
-  /// Factory constructor for ease
   factory Medicine.withTimeOfDay({
-    required String id,
+    String? id,
     required String name,
     required String dosage,
     required TimeOfDay time,
     required MedicineType type,
-    bool isTaken = false,
+    bool isTaken = false, //medicine.isTaken = true;
   }) {
     return Medicine(
-      id: id,
+      id: id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       dosage: dosage,
       hour: time.hour,
@@ -71,7 +71,6 @@ class Medicine {
     );
   }
 
-  /// Add copyWith to help update fields immutably
   Medicine copyWith({
     String? id,
     String? name,
@@ -88,6 +87,7 @@ class Medicine {
       hour: hour ?? this.hour,
       minute: minute ?? this.minute,
       type: type ?? this.type,
+
       isTaken: isTaken ?? this.isTaken,
     );
   }

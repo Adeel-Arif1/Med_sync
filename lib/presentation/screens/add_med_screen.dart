@@ -60,6 +60,8 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         return 'Drop';
       case MedicineType.tablet:
         return 'Tablet';
+      default:
+        return '';
     }
   }
 
@@ -100,9 +102,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       _buildTextField(
                         controller: _nameController,
                         hintText: 'Name (e.g. Ibuprofen)',
-                        validator: (value) => value?.isEmpty ?? true
-                            ? 'Please enter medicine name'
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter medicine name'
+                                    : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSectionTitle('Type*'),
@@ -112,9 +116,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       _buildTextField(
                         controller: _doseController,
                         hintText: 'Dose (e.g. 100mg)',
-                        validator: (value) => value?.isEmpty ?? true
-                            ? 'Please enter medicine dose'
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter medicine dose'
+                                    : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSectionTitle('Amount*'),
@@ -122,9 +128,11 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         controller: _amountController,
                         hintText: 'Amount (e.g. 3)',
                         keyboardType: TextInputType.number,
-                        validator: (value) => value?.isEmpty ?? true
-                            ? 'Please enter amount'
-                            : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter amount'
+                                    : null,
                       ),
                       const SizedBox(height: 24),
                       _buildSectionTitle('Reminders'),
@@ -174,12 +182,15 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
     return DropdownButtonFormField<String>(
       value: _selectedType,
       decoration: _buildInputDecoration('Select Option'),
-      items: _medicineTypes
-          .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-          .toList(),
+      items:
+          _medicineTypes
+              .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+              .toList(),
       onChanged: (value) => setState(() => _selectedType = value),
-      validator: (value) =>
-          value == null ? 'Please select medicine type' : null,
+      
+      validator:
+          (value) => value == null ? 'Please select medicine type' : null,
+          dropdownColor: Colors.white,
     );
   }
 
@@ -201,12 +212,14 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                   ? 'dd/mm/yyyy, 00:00'
                   : _dateController.text,
               style: TextStyle(
-                color: _dateController.text.isEmpty
-                    ? Colors.grey.shade400
-                    : AppColors.textPrimary,
+                color:
+                    _dateController.text.isEmpty
+                        ? Colors.grey.shade400
+                        : AppColors.textPrimary,
               ),
             ),
             Icon(Icons.calendar_today, size: 20, color: AppColors.primary),
+          
           ],
         ),
       ),
@@ -224,8 +237,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Turn on Alarm',
-              style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+          Text(
+            'Turn on Alarm',
+            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+          ),
           Switch(
             value: _alarmEnabled,
             onChanged: (value) => setState(() => _alarmEnabled = value),
@@ -277,48 +292,82 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
-
-  Future<void> _selectDateTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (pickedTime != null) {
-      setState(() {
-        _selectedTime = pickedTime;
-        final now = DateTime.now();
-        final formatted = DateFormat('dd/MM/yyyy, HH:mm').format(
-          DateTime(
-            now.year,
-            now.month,
-            now.day,
-            pickedTime.hour,
-            pickedTime.minute,
+void _selectDateTime(BuildContext context) async {
+  final selectedDateTime = await showDatePicker(
+    context: context,
+    initialDate: widget.selectedDate,
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2101),
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(
+            primary: AppColors.primary,
+            onPrimary: Colors.white,
+            surface: Colors.white, // White background for date picker
+            onSurface: AppColors.textPrimary,
           ),
+          dialogBackgroundColor: Colors.white, // Fallback for dialog
+        ),
+        child: child!,
+      );
+    },
+  );
+
+  if (selectedDateTime != null) {
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white, // White background for time picker
+              onSurface: AppColors.textPrimary,
+            ),
+            dialogBackgroundColor: Colors.white, // Fallback for dialog
+          ),
+          child: child!,
         );
-        _dateController.text = formatted;
+      },
+    );
+
+    if (selectedTime != null) {
+      final formattedDate = DateFormat('dd/MM/yyyy, HH:mm').format(
+        DateTime(
+          selectedDateTime.year,
+          selectedDateTime.month,
+          selectedDateTime.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        ),
+      );
+      setState(() {
+        _dateController.text = formattedDate;
+        _selectedTime = selectedTime;
       });
     }
   }
-//  id: widget.existingMedicine?.id,
+}
+
   void _saveMedicine() {
     if (_formKey.currentState!.validate()) {
       final updatedMedicine = Medicine.withTimeOfDay(
-        id: widget.existingMedicine?.id ??
-            DateTime.now().millisecondsSinceEpoch.toString(),
+        id: widget.existingMedicine?.id, // Preserve original ID
         name: _nameController.text,
         dosage:
             '${_amountController.text} ${_selectedType?.toLowerCase() ?? ''}, ${_doseController.text}',
-        type: _selectedType == 'Capsule'
-            ? MedicineType.capsule
-            : _selectedType == 'Drop'
+        time: _selectedTime ?? TimeOfDay.now(),
+        type:
+            _selectedType == 'Capsule'
+                ? MedicineType.capsule
+                : _selectedType == 'Drop'
                 ? MedicineType.drops
                 : MedicineType.tablet,
-        time: _selectedTime ?? TimeOfDay.now(),
+        isTaken: widget.existingMedicine?.isTaken ?? false,
       );
-
-      // Save the medicine data (e.g., via Provider, Hive, etc.)
-      // Add navigation or snackbar if needed
 
       Navigator.pop(context, updatedMedicine);
     }

@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:med_sync/core/constants/app_colors.dart';
+import 'package:med_sync/features/application/provider/medicine_provider.dart';
+import 'package:med_sync/features/domain/model/medicine_model.dart';
+import 'package:med_sync/presentation/screens/add_med_screen.dart';
+import 'package:provider/provider.dart';
 
-class MedicineReminderScreen extends StatelessWidget {
-  const MedicineReminderScreen({super.key});
+class MedicineInfoScreen extends StatelessWidget {
+  final Medicine medicine;
+  final DateTime selectedDate;
+
+  const MedicineInfoScreen({
+    super.key,
+    required this.medicine,
+    required this.selectedDate,
+  });
 
   void _showDeleteDialog(BuildContext context) {
     showDialog(
@@ -12,16 +25,17 @@ class MedicineReminderScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); 
+              Navigator.pop(context);
             },
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              // ✅ Add delete logic here
+              Provider.of<MedicineProvider>(context, listen: false).deleteMedicine(medicine);
               Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Return to HomeScreen
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Medicine Deleted")),
+                SnackBar(content: Text("${medicine.name} Deleted")),
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -41,11 +55,14 @@ class MedicineReminderScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const Align(
+              Align(
                 alignment: Alignment.topLeft,
                 child: CircleAvatar(
-                  backgroundColor: Color(0xFFF5F5F5),
-                  child: Icon(Icons.arrow_back, color: Colors.black),
+                  backgroundColor: const Color(0xFFF5F5F5),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -60,19 +77,22 @@ class MedicineReminderScreen extends StatelessWidget {
                     // Top Row Icons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        CircleAvatar(
+                      children: [
+                        const CircleAvatar(
                           backgroundColor: Colors.white,
                           child: Icon(Icons.info, color: Colors.orange),
                         ),
                         CircleAvatar(
                           backgroundColor: Colors.white,
-                          child: Icon(Icons.delete, color: Colors.red),
+                          child: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _showDeleteDialog(context),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Did you take your Medicine?',
                       style: TextStyle(
                         fontSize: 16,
@@ -81,61 +101,64 @@ class MedicineReminderScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-
                     // Medicine Image
                     Image.asset(
                       'assets/images/pill.png',
                       width: 60,
                       height: 60,
                     ),
-
                     const SizedBox(height: 10),
-
-                    const Text(
-                      'Vitamin D',
+                    Text(
+                      medicine.name,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.blueAccent,
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     // Schedule
                     Row(
-                      children: const [
-                        Icon(Icons.calendar_today, color: Colors.blue),
-                        SizedBox(width: 8),
+                      children: [
+                        const Icon(Icons.calendar_today, color: Colors.blue),
+                        const SizedBox(width: 8),
                         Text(
-                          'Scheduled for 09:41 PM, Wednesday',
-                          style: TextStyle(fontSize: 14),
+                          'Scheduled for ${medicine.time.format(context)}, ${DateFormat('EEEE').format(selectedDate)}',
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-
                     // Dosage
                     Row(
-                      children: const [
-                        Icon(Icons.description_outlined, color: Colors.blue),
-                        SizedBox(width: 8),
+                      children: [
+                        const Icon(Icons.description_outlined, color: Colors.blue),
+                        const SizedBox(width: 8),
                         Text(
-                          '1 Capsule, 10000mg',
-                          style: TextStyle(fontSize: 14),
+                          medicine.dosage,
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-
                     // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            // Take logic here
+                            final updatedMedicine = medicine.copyWith(
+                              isTaken: !medicine.isTaken,
+                            );
+                            Provider.of<MedicineProvider>(context, listen: false).updateMedicine(updatedMedicine);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${medicine.name} marked as ${!medicine.isTaken ? 'taken' : 'not taken'}',
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
@@ -143,23 +166,48 @@ class MedicineReminderScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 12),
+                              horizontal: 30,
+                              vertical: 12,
+                            ),
                           ),
-                          child: const Text('Take', style: TextStyle(color: Colors.white),),
+                          child: Text(
+                            medicine.isTaken ? 'Undo Taken' : 'Take',
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                         const SizedBox(width: 20),
                         ElevatedButton(
-                          onPressed: () => _showDeleteDialog(context),
+                          onPressed: () async {
+                            final updatedMedicine = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddMedicinePage(
+                                  selectedDate: selectedDate,
+                                  existingMedicine: medicine,
+                                ),
+                              ),
+                            );
+                            if (updatedMedicine != null) {
+                              Provider.of<MedicineProvider>(context, listen: false).updateMedicine(updatedMedicine);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${updatedMedicine.name} updated')),
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
-                           // foregroundColor: Colors.blue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 30, vertical: 12),
+                              horizontal: 30,
+                              vertical: 12,
+                            ),
                           ),
-                          child: const Text('Edit',style: TextStyle(color: Colors.white),),
+                          child: const Text(
+                            'Edit',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ),

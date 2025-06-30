@@ -14,157 +14,141 @@ class MedicineCard extends StatelessWidget {
     required this.onEdit,
   });
 
+  IconData _getMedicineIcon() {
+    if (medicine.isTaken) {
+      return Icons.check_circle;
+    }
+    switch (medicine.type) {
+      case MedicineType.tablet:
+        return Icons.medication;
+      case MedicineType.drops:
+        return Icons.water_drop;
+      case MedicineType.capsule:
+        return Icons.medication_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final time = medicine.time.format(context);
-    final timeLeft = _calculateTimeLeft(medicine.time);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        minVerticalPadding: 0, // Reduces minimum vertical padding
-        dense: true, // Makes the ListTile more compact
-        leading: _buildMedicineIcon(),
-        title: Text(
-          medicine.name,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Colors.black87,
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: [Colors.white, const Color(0xFFF8FBFF).withOpacity(0.5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        subtitle: _buildMedicineDetails(time, timeLeft),
-        trailing: SizedBox(
-          height: 48, // Fixed height for trailing widget
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Edit button - smaller with less padding
-              GestureDetector(
-                onTap: onEdit,
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Medicine Icon with Gradient Background
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.15),
+                      AppColors.primary.withOpacity(0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Center(
                   child: Icon(
-                    Icons.edit,
-                    size: 18,
-                    color: AppColors.textSecondary,
+                    _getMedicineIcon(),
+                    color: medicine.isTaken ? AppColors.primary : AppColors.textSecondary,
+                    size: 28,
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
-              // Status indicator - more compact
-              medicine.isTaken
-                  ? const Icon(
-                      Icons.check_circle_rounded,
-                      size: 18,
-                      color: AppColors.primary,
-                    )
-                  : GestureDetector(
-                      onTap: onMarkTaken,
-                      child: const Icon(
-                        Icons.add_alarm_rounded,
-                        size: 18,
-                        color: AppColors.primary,
-                      ),
+            ),
+            const SizedBox(width: 12),
+            // Medicine Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    medicine.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMedicineIcon() {
-    return Container(
-      width: 40, // Reduced from 50
-      height: 40, // Reduced from 50
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withOpacity(0.2),
-            AppColors.primary.withOpacity(0.1),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    medicine.dosage,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary.withOpacity(0.85),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: AppColors.textSecondary.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        medicine.time.format(context),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary.withOpacity(0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Action Buttons
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  child: IconButton(
+                    icon: const Icon(Icons.edit, size: 18, color: AppColors.primary),
+                    onPressed: onEdit,
+                    tooltip: 'Edit Medicine',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  child: IconButton(
+                    icon: const Icon(Icons.alarm, size: 18, color: AppColors.primary),
+                    onPressed: onMarkTaken,
+                    tooltip: 'View Reminder',
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
-            ? Icons.medication_liquid
-            : Icons.water_drop_rounded,
-        color: AppColors.primary,
-        size: 22, // Reduced from 28
       ),
     );
-  }
-
-  Widget _buildMedicineDetails(String time, String timeLeft) {
-    final String unit = (medicine.type == MedicineType.capsule || medicine.type == MedicineType.tablet)
-        ? 'mg'
-        : 'ml';
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${medicine.dosage} $unit',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13), // Slightly smaller
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(Icons.access_time, size: 14, color: AppColors.primary), // Smaller
-              const SizedBox(width: 4),
-              Text(
-                time,
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13, // Smaller
-                ),
-              ),
-              const Spacer(),
-              Text(
-                timeLeft,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 11, // Smaller
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _calculateTimeLeft(TimeOfDay medicineTime) {
-    final now = DateTime.now();
-    final scheduled = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      medicineTime.hour,
-      medicineTime.minute,
-    );
-    final difference = scheduled.difference(now);
-
-    if (difference.isNegative) return 'Overdue';
-    if (difference.inMinutes < 60) return 'in ${difference.inMinutes}m';
-    return 'in ${difference.inHours}h ${difference.inMinutes.remainder(60)}m';
   }
 }

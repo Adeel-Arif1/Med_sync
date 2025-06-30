@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:med_sync/features/application/provider/medicine_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
+import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/add_med_screen.dart';
+import 'package:med_sync/presentation/screens/medinfo_screen.dart';
 import 'package:med_sync/presentation/widgets/date_selector.dart';
 import 'package:med_sync/presentation/widgets/medicine_card.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,13 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    
     _selectedDate = DateTime.now();
+    _loadMedicines();
+  }
 
-Future<void> _loadMedicines() async {
-  await Provider.of<MedicineProvider>(context, listen: false).loadMedicines();
-  // Debug prints can go here
-      // Wait for provider to initialize then print
+  Future<void> _loadMedicines() async {
+    await Provider.of<MedicineProvider>(context, listen: false).loadMedicines();
     Future.delayed(Duration(milliseconds: 500), () {
       final provider = Provider.of<MedicineProvider>(context, listen: false);
       print("🚀 Loaded medicines on app start:");
@@ -38,10 +39,6 @@ Future<void> _loadMedicines() async {
       });
     });
   }
-
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +77,14 @@ Future<void> _loadMedicines() async {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFAB() {
+    return FloatingActionButton(
+      onPressed: _navigateToAddMedicine,
+      backgroundColor: AppColors.primary,
+      child: const Icon(Icons.add, color: Colors.white),
     );
   }
 
@@ -134,85 +139,70 @@ Future<void> _loadMedicines() async {
     );
   }
 
- Widget _buildMedicineList() {
-  return Consumer<MedicineProvider>(
-    builder: (context, medicineProvider, _) {
-      return ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: medicineProvider.medicines.length,
-        itemBuilder: (context, index) {
-          final medicine = medicineProvider.medicines[index];
-
-          return Dismissible(
-            key: Key(medicine.id), // Make sure id is unique in your model
-            direction: DismissDirection.endToStart,
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.redAccent,
-                borderRadius: BorderRadius.circular(16),
+  Widget _buildMedicineList() {
+    return Consumer<MedicineProvider>(
+      builder: (context, medicineProvider, _) {
+        final filteredMedicines = medicineProvider.medicines;
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: filteredMedicines.length,
+          itemBuilder: (context, index) {
+            final medicine = filteredMedicines[index];
+            return Dismissible(
+              key: Key(medicine.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.delete, color: Colors.white, size: 28),
               ),
-              child: const Icon(Icons.delete, color: Colors.white, size: 28),
-            ),
-            onDismissed: (_) {
-              Provider.of<MedicineProvider>(context, listen: false)
-                  .deleteMedicine(medicine); // ID-based delete
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${medicine.name} deleted')),
-              );
-            },
-          child: MedicineCard(
-  medicine: medicine,
-  onMarkTaken: () => _markAsTaken(medicine, medicineProvider),
-  onEdit: () => _navigateToEditMedicine(medicine),
-),
-
-          );
-        },
-      );
-    },
-  );
-}
-
-
-  void _markAsTaken(
-    Medicine medicine,
-    MedicineProvider medicineProvider,
-  ) async {
-    setState(() {
-      medicine.isTaken = true;
-    });
-
-    // Update medicine status in the database and the provider
-    await medicineProvider.updateMedicineStatus(medicine);
+              onDismissed: (_) {
+                Provider.of<MedicineProvider>(context, listen: false)
+                    .deleteMedicine(medicine);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${medicine.name} deleted')),
+                );
+              },
+              child: MedicineCard(
+                medicine: medicine,
+                onMarkTaken: () => _navigateToInfoScreen(medicine),
+                onEdit: () => _navigateToEditMedicine(medicine),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
-  Widget _buildFAB() {
-    return FloatingActionButton(
-      backgroundColor: AppColors.primary,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: const Icon(Icons.add, color: Colors.white, size: 28),
-      onPressed: _navigateToAddMedicine,
+  void _navigateToInfoScreen(Medicine medicine) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MedicineInfoScreen(
+          medicine: medicine,
+          selectedDate: _selectedDate,
+        ),
+      ),
     );
   }
 
   void _navigateToAddMedicine() async {
     final newMedicine = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddMedicinePage( selectedDate: _selectedDate, )),
+      MaterialPageRoute(
+        builder: (_) => AddMedicinePage(selectedDate: _selectedDate),
+      ),
     );
-
-    if (newMedicine != null && newMedicine is Medicine) {
+    if (newMedicine != null) {
       final provider = Provider.of<MedicineProvider>(context, listen: false);
       provider.addMedicine(newMedicine);
-
-      // Debug print
       print("✅ Added new medicine: ${newMedicine.name}");
-
-      // Delay to let provider update, then log the list
       Future.delayed(Duration(milliseconds: 500), () {
         print("📦 Medicines in Provider after add:");
         provider.medicines.forEach((med) {
@@ -221,30 +211,28 @@ Future<void> _loadMedicines() async {
           );
         });
       });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Medicine saved successfully!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Medicine saved successfully!')),
+      );
     }
   }
+
   void _navigateToEditMedicine(Medicine medicine) async {
-  final updatedMedicine = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => AddMedicinePage(
-        selectedDate: _selectedDate,
-        existingMedicine: medicine, // <-- Pass medicine to pre-fill form
+    final updatedMedicine = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddMedicinePage(
+          selectedDate: _selectedDate,
+          existingMedicine: medicine,
+        ),
       ),
-    ),
-  );
-
-  if (updatedMedicine != null && updatedMedicine is Medicine) {
-    final provider = Provider.of<MedicineProvider>(context, listen: false);
-    provider.updateMedicine(updatedMedicine); // <-- Update medicine in provider
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${updatedMedicine.name} updated')),
     );
+    if (updatedMedicine != null) {
+      final provider = Provider.of<MedicineProvider>(context, listen: false);
+      provider.updateMedicine(updatedMedicine);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${updatedMedicine.name} updated')),
+      );
+    }
   }
-}
-
 }
