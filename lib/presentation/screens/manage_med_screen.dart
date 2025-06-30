@@ -1,10 +1,15 @@
+
 import 'package:flutter/material.dart';
+import 'package:med_sync/features/application/provider/auth_service.dart';
 import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/add_med_screen.dart';
+import 'package:med_sync/presentation/screens/auth/welcome_screen.dart';
 import 'package:med_sync/presentation/screens/home_page_screen.dart';
+
 import 'package:med_sync/presentation/widgets/custom_text.dart';
 import 'package:provider/provider.dart';
+import 'package:med_sync/core/constants/app_colors.dart';
 
 class ManageMedScreen extends StatelessWidget {
   const ManageMedScreen({super.key});
@@ -31,7 +36,7 @@ class ManageMedScreen extends StatelessWidget {
                 SecondaryHeading(
                   'Add your meds to be reminded on time and track your health ',
                 ),
-                SizedBox(height: 190),
+                SizedBox(height: 150),
                 SizedBox(
                   height: 60,
                   width: 200,
@@ -41,7 +46,7 @@ class ManageMedScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => AddMedicinePage(
-                            selectedDate: DateTime.now(), // Pass current date
+                            selectedDate: DateTime.now(),
                           ),
                         ),
                       );
@@ -51,7 +56,6 @@ class ManageMedScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Medicine added successfully!')),
                         );
-                        // Optionally navigate to HomeScreen
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -72,6 +76,25 @@ class ManageMedScreen extends StatelessWidget {
                     child: const Text(
                       'Add Medicine',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () async {
+                    final authService = AuthService();
+                    await authService.signOut();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      color: AppColors.red ?? Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),

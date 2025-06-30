@@ -5,6 +5,7 @@ import 'package:med_sync/core/constants/app_colors.dart';
 import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/add_med_screen.dart';
+import 'package:med_sync/presentation/screens/manage_med_screen.dart';
 import 'package:med_sync/presentation/screens/medinfo_screen.dart';
 import 'package:med_sync/presentation/widgets/date_selector.dart';
 import 'package:med_sync/presentation/widgets/medicine_card.dart';
@@ -77,6 +78,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.person, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ManageMedScreen()),
+            );
+          },
+        ),
+      ],
     );
   }
 

@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:med_sync/presentation/screens/auth/auth/google_signin.dart';
 import 'package:med_sync/presentation/screens/auth/auth/login_screen.dart';
+import 'package:med_sync/presentation/screens/auth/auth/otp_screen.dart';
 import 'package:med_sync/presentation/screens/home_page_screen.dart';
 import 'package:med_sync/presentation/widgets/custom_appbar.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
@@ -48,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
     if (message == 'Success') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const OtpScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

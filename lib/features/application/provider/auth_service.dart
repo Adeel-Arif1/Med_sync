@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -8,12 +9,14 @@ class AuthService {
   // Sign up with email and password
   Future<String?> signUp(String email, String password, String username) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      await _auth.currentUser?.updateDisplayName(username);
-      print('SignUp successful for: $email');
+      await userCredential.user?.updateDisplayName(username);
+      // Send email verification
+      await userCredential.user?.sendEmailVerification();
+      print('Verification email sent to: $email');
       return 'Success';
     } on FirebaseAuthException catch (e) {
       print('SignUp error: ${e.code} - ${e.message}');
@@ -111,6 +114,13 @@ class AuthService {
   // Get current user
   User? getCurrentUser() {
     return _auth.currentUser;
+  }
+
+  // Check if email is verified
+  Future<bool> isEmailVerified() async {
+    User? user = _auth.currentUser;
+    await user?.reload(); // Refresh user data
+    return user?.emailVerified ?? false;
   }
 
   // Handle Firebase Auth errors
