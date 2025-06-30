@@ -1,17 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:med_sync/core/constants/app_colors.dart';
+import 'package:med_sync/presentation/screens/auth/auth/forgot_password.dart';
 import 'package:med_sync/presentation/screens/auth/auth/register_screen.dart';
 import 'package:med_sync/presentation/screens/home_page_screen.dart';
-import 'package:med_sync/presentation/screens/manage_med_screen.dart';
 import 'package:med_sync/presentation/widgets/custom_buttons.dart';
+import 'package:med_sync/features/application/provider/auth_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _signIn() async {
+    setState(() => _isLoading = true);
+    final message = await _authService.signIn(
+      _emailController.text,
+      _passwordController.text,
+    );
+    setState(() => _isLoading = false);
+    if (message == 'Success') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message ?? 'Login failed')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // White background
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -33,14 +70,13 @@ class LoginScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 40),
-
-              // Email Field
               const Text(
                 'Email',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   hintText: 'Enter your email',
                   filled: true,
@@ -52,14 +88,13 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Password Field
               const Text(
                 'Password',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
@@ -72,13 +107,14 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // Forgot Password
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // Add forgot password action
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ForgotPassword()),
+                    );
                   },
                   child: const Text(
                     'Forgot Password?',
@@ -89,24 +125,14 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // Login Button
-              PrimaryButton(
-                text: 'Login',
-                onPressed: () {
-                  // Add login logic
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ManageMedScreen()),
-                  );
-                },
-              ),
-
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : PrimaryButton(
+                      text: 'Login',
+                      onPressed: _signIn,
+                    ),
               const SizedBox(height: 12),
-
-              // Register Button
               SecondaryButton(
                 text: 'Don’t have an account? Register',
                 onPressed: () {
@@ -114,17 +140,15 @@ class LoginScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(builder: (_) => const RegisterPage()),
                   );
-                  // Navigate to register screen
                 },
               ),
-              // Login Prompt
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Already have an account?'),
                   TextButton(
                     onPressed: () {
-                      // Navigate to login page
+                      // Already on LoginScreen, no action needed
                     },
                     child: const Text(
                       'Login',

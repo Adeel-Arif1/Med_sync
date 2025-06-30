@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "303537348027",
+    "project_id": "medsync-19c28",
+    "storage_bucket": "medsync-19c28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303537348027:android:8efd9fdce0d886155a389e",
+        "android_client_info": {
+          "package_name": "com.example.med_sync"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "303537348027-9mf23bek63tdq06lr1s8urqrpn8pquqh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.med_sync",
+            "certificate_hash": "0a2ce390c5013fd4b0d88d9a7a578705bebfc74f"
+          }
+        },
+        {
+          "client_id": "303537348027-tgpng8knos8ectlocmbk85gdub1i129o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUO_9_l5YzP8bum7eDS81SRO6pGIF32g0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "303537348027-tgpng8knos8ectlocmbk85gdub1i129o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "303537348027-hnt3c546f12rv7fjsoskljqevg4r41sb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.medSync"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

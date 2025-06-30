@@ -60,8 +60,6 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
         return 'Drop';
       case MedicineType.tablet:
         return 'Tablet';
-      default:
-        return '';
     }
   }
 
@@ -102,11 +100,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       _buildTextField(
                         controller: _nameController,
                         hintText: 'Name (e.g. Ibuprofen)',
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter medicine name'
-                                    : null,
+                        validator: (value) =>
+                            value?.isEmpty ?? true
+                                ? 'Please enter medicine name'
+                                : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSectionTitle('Type*'),
@@ -116,11 +113,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                       _buildTextField(
                         controller: _doseController,
                         hintText: 'Dose (e.g. 100mg)',
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter medicine dose'
-                                    : null,
+                        validator: (value) =>
+                            value?.isEmpty ?? true
+                                ? 'Please enter medicine dose'
+                                : null,
                       ),
                       const SizedBox(height: 16),
                       _buildSectionTitle('Amount*'),
@@ -128,11 +124,10 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                         controller: _amountController,
                         hintText: 'Amount (e.g. 3)',
                         keyboardType: TextInputType.number,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter amount'
-                                    : null,
+                        validator: (value) =>
+                            value?.isEmpty ?? true
+                                ? 'Please enter amount'
+                                : null,
                       ),
                       const SizedBox(height: 24),
                       _buildSectionTitle('Reminders'),
@@ -182,15 +177,12 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
     return DropdownButtonFormField<String>(
       value: _selectedType,
       decoration: _buildInputDecoration('Select Option'),
-      items:
-          _medicineTypes
-              .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-              .toList(),
+      items: _medicineTypes
+          .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+          .toList(),
       onChanged: (value) => setState(() => _selectedType = value),
-      
-      validator:
-          (value) => value == null ? 'Please select medicine type' : null,
-          dropdownColor: Colors.white,
+      validator: (value) => value == null ? 'Please select medicine type' : null,
+      dropdownColor: Colors.white,
     );
   }
 
@@ -212,14 +204,12 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
                   ? 'dd/mm/yyyy, 00:00'
                   : _dateController.text,
               style: TextStyle(
-                color:
-                    _dateController.text.isEmpty
-                        ? Colors.grey.shade400
-                        : AppColors.textPrimary,
+                color: _dateController.text.isEmpty
+                    ? Colors.grey.shade400
+                    : AppColors.textPrimary,
               ),
             ),
             Icon(Icons.calendar_today, size: 20, color: AppColors.primary),
-          
           ],
         ),
       ),
@@ -292,78 +282,78 @@ class _AddMedicinePageState extends State<AddMedicinePage> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
-void _selectDateTime(BuildContext context) async {
-  final selectedDateTime = await showDatePicker(
-    context: context,
-    initialDate: widget.selectedDate,
-    firstDate: DateTime(2000),
-    lastDate: DateTime(2101),
-    builder: (context, child) {
-      return Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: AppColors.primary,
-            onPrimary: Colors.white,
-            surface: Colors.white, // White background for date picker
-            onSurface: AppColors.textPrimary,
-          ),
-          dialogBackgroundColor: Colors.white, // Fallback for dialog
-        ),
-        child: child!,
-      );
-    },
-  );
 
-  if (selectedDateTime != null) {
-    final selectedTime = await showTimePicker(
+  void _selectDateTime(BuildContext context) async {
+    final selectedDateTime = await showDatePicker(
       context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
+      initialDate: widget.selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
               primary: AppColors.primary,
               onPrimary: Colors.white,
-              surface: Colors.white, // White background for time picker
+              surface: Colors.white,
               onSurface: AppColors.textPrimary,
             ),
-            dialogBackgroundColor: Colors.white, // Fallback for dialog
+            dialogBackgroundColor: Colors.white,
           ),
           child: child!,
         );
       },
     );
 
-    if (selectedTime != null) {
-      final formattedDate = DateFormat('dd/MM/yyyy, HH:mm').format(
-        DateTime(
-          selectedDateTime.year,
-          selectedDateTime.month,
-          selectedDateTime.day,
-          selectedTime.hour,
-          selectedTime.minute,
-        ),
+    if (selectedDateTime != null) {
+      final selectedTime = await showTimePicker(
+        context: context,
+        initialTime: _selectedTime ?? TimeOfDay.now(),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: AppColors.primary,
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: AppColors.textPrimary,
+              ),
+              dialogBackgroundColor: Colors.white,
+            ),
+            child: child!,
+          );
+        },
       );
-      setState(() {
-        _dateController.text = formattedDate;
-        _selectedTime = selectedTime;
-      });
+
+      if (selectedTime != null) {
+        final formattedDate = DateFormat('dd/MM/yyyy, HH:mm').format(
+          DateTime(
+            selectedDateTime.year,
+            selectedDateTime.month,
+            selectedDateTime.day,
+            selectedTime.hour,
+            selectedTime.minute,
+          ),
+        );
+        setState(() {
+          _dateController.text = formattedDate;
+          _selectedTime = selectedTime;
+        });
+      }
     }
   }
-}
 
   void _saveMedicine() {
     if (_formKey.currentState!.validate()) {
       final updatedMedicine = Medicine.withTimeOfDay(
-        id: widget.existingMedicine?.id, // Preserve original ID
+        id: widget.existingMedicine?.id,
         name: _nameController.text,
         dosage:
             '${_amountController.text} ${_selectedType?.toLowerCase() ?? ''}, ${_doseController.text}',
         time: _selectedTime ?? TimeOfDay.now(),
-        type:
-            _selectedType == 'Capsule'
-                ? MedicineType.capsule
-                : _selectedType == 'Drop'
+        type: _selectedType == 'Capsule'
+            ? MedicineType.capsule
+            : _selectedType == 'Drop'
                 ? MedicineType.drops
                 : MedicineType.tablet,
         isTaken: widget.existingMedicine?.isTaken ?? false,

@@ -1,36 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart'; // Add this import
-import 'package:med_sync/core/database_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:med_sync/features/application/provider/medicine_provider.dart';
 import 'package:med_sync/features/domain/model/medicine_model.dart';
 import 'package:med_sync/presentation/screens/auth/welcome_screen.dart';
 import 'package:med_sync/presentation/screens/home_page_screen.dart';
+import 'package:med_sync/firebase_options.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
-  // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
-  //await DatabaseService.init();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   // Initialize Hive
   await Hive.initFlutter();
-  //await Hive.box<Medicine>('medicines').clear();
-
-  
-  // Register Hive adapters
-  Hive.registerAdapter(MedicineAdapter()); // Add this after creating the adapter
-    Hive.registerAdapter(MedicineTypeAdapter());
-  // Open the medicines box
+  Hive.registerAdapter(MedicineAdapter());
+  Hive.registerAdapter(MedicineTypeAdapter());
   await Hive.openBox<Medicine>('medicines');
-  
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          
-            create: (_) => MedicineProvider()..loadMedicines(), )
-         // create: (_) => MedicineProvider()),
+          create: (_) => MedicineProvider()..loadMedicines(),
+        ),
       ],
       child: const MainApp(),
     ),
@@ -44,7 +41,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }
